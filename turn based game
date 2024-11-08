@@ -1,0 +1,113 @@
+import random
+
+class Character:
+    def __init__(self, name, health, attack, defense):
+        self.name = name
+        self.health = health
+        self.attack = attack
+        self.defense = defense
+    
+    def is_alive(self):
+        return self.health > 0
+    
+    def take_damage(self, damage):
+        actual_damage = max(0, damage - self.defense)  # Defense mitigates damage
+        self.health -= actual_damage
+        print(f"{self.name} takes {actual_damage} damage and now has {self.health} HP.")
+    
+    def attack_enemy(self, enemy):
+        damage = random.randint(self.attack - 5, self.attack + 5)  # Randomized attack
+        print(f"{self.name} attacks {enemy.name} for {damage} damage!")
+        enemy.take_damage(damage)
+    
+    def heal(self):
+        heal_amount = random.randint(5, 15)
+        self.health += heal_amount
+        print(f"{self.name} heals for {heal_amount} HP and now has {self.health} HP.")
+    
+    def show_status(self):
+        print(f"{self.name} - HP: {self.health} | Attack: {self.attack} | Defense: {self.defense}")
+        
+class Player(Character):
+    def __init__(self, name, health=100, attack=20, defense=5):
+        super().__init__(name, health, attack, defense)
+    
+    def choose_action(self):
+        print("\nChoose your action:")
+        print("1. Attack")
+        print("2. Heal")
+        choice = input("Enter 1 or 2: ")
+        if choice == "1":
+            return "attack"
+        elif choice == "2":
+            return "heal"
+        else:
+            print("Invalid choice. You chose to attack by default.")
+            return "attack"
+
+class Enemy(Character):
+    def __init__(self, name, health=80, attack=18, defense=4):
+        super().__init__(name, health, attack, defense)
+    
+    def choose_action(self):
+        # Simple AI: if the enemy has less than 30% health, it will heal.
+        if self.health < 30:
+            return "heal"
+        else:
+            return "attack"
+    
+class Game:
+    def __init__(self, player_name="Player"):
+        self.player = Player(player_name)
+        self.enemy = Enemy("Enemy")
+        self.turn_count = 0
+    
+    def display_status(self):
+        print("\n--- Game Status ---")
+        self.player.show_status()
+        self.enemy.show_status()
+    
+    def player_turn(self):
+        action = self.player.choose_action()
+        if action == "attack":
+            self.player.attack_enemy(self.enemy)
+        elif action == "heal":
+            self.player.heal()
+    
+    def enemy_turn(self):
+        action = self.enemy.choose_action()
+        if action == "attack":
+            self.enemy.attack_enemy(self.player)
+        elif action == "heal":
+            self.enemy.heal()
+    
+    def check_winner(self):
+        if not self.player.is_alive():
+            print("\nGame Over! The enemy defeated you.")
+            return True
+        elif not self.enemy.is_alive():
+            print("\nCongratulations! You defeated the enemy.")
+            return True
+        return False
+    
+    def play(self):
+        print(f"Welcome to the Battle, {self.player.name}!")
+        while True:
+            self.turn_count += 1
+            print(f"\n--- Turn {self.turn_count} ---")
+            self.display_status()
+            
+            # Player's turn
+            self.player_turn()
+            if self.check_winner():
+                break
+            
+            # Enemy's turn
+            self.enemy_turn()
+            if self.check_winner():
+                break
+
+if __name__ == "__main__":
+    player_name = input("Enter your character's name: ")
+    game = Game(player_name)
+    game.play()
