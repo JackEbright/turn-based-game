@@ -1,3 +1,4 @@
+#Jack Ebright
 import random
 
 class Character:
